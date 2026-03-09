@@ -153,7 +153,7 @@ End-to-end implementation:
 **Format:** Each hour includes a learning focus + a practical task (lab/output).
 
 ### Module 1 (M1): DevOps Fundamentals (Hours 1–4)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 1 | DevOps overview + why DevOps | 1) DevOps definition<br>2) Business outcomes (speed, quality)<br>3) Lead time basics<br>4) Deployment frequency basics<br>5) Change failure rate basics<br>6) MTTR basics<br>7) Feedback loops<br>8) Automation mindset<br>9) Collaboration model<br>10) Value stream overview | Map DevOps lifecycle to a sample app |
 | 2 | Dev vs DevOps + CALMS culture | 1) Silos and handoffs<br>2) Bottlenecks and queues<br>3) CALMS: Culture<br>4) CALMS: Automation<br>5) CALMS: Lean<br>6) CALMS: Measurement<br>7) CALMS: Sharing<br>8) Ownership and accountability<br>9) Blameless postmortems<br>10) Continuous improvement loop | Identify bottlenecks in a “traditional” flow |
@@ -161,7 +161,7 @@ End-to-end implementation:
 | 4 | Agile/Scrum + toolchain overview | 1) Agile principles summary<br>2) Scrum roles<br>3) Scrum ceremonies<br>4) Sprint backlog vs product backlog<br>5) Definition of Done<br>6) Estimation basics (story points)<br>7) Kanban WIP limits<br>8) DevOps toolchain map (plan-code-build-test-release-operate-monitor)<br>9) Common tool categories (SCM, CI, IaC, observability)<br>10) Choosing tools by constraints | Create a minimal toolchain checklist |
 
 ### Module 2 (M2): Linux for DevOps (Hours 5–8)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 5 | Linux basics + filesystem | 1) Linux distributions overview<br>2) Shell vs terminal<br>3) Paths (absolute vs relative)<br>4) File types and extensions reality<br>5) Directory navigation commands<br>6) Listing and searching basics<br>7) Viewing file contents safely<br>8) Editing basics (choose editor)<br>9) Environment variables intro<br>10) Exit codes basics | Navigate directories; create files/folders |
 | 6 | Permissions + users/groups | 1) Users vs groups model<br>2) Permission bits (rwx)<br>3) Numeric modes (e.g., 755)<br>4) Ownership (user:group)<br>5) umask concept<br>6) chmod/chown/chgrp usage<br>7) Executable bit meaning<br>8) SUID/SGID concept<br>9) Sticky bit concept<br>10) Least privilege on servers | Practice chmod/chown; explain rwx numerically |
@@ -169,7 +169,7 @@ End-to-end implementation:
 | 8 | Networking + shell scripting intro | 1) IP and DNS basics<br>2) ping vs curl vs wget purpose<br>3) traceroute concept<br>4) netstat/ss concept<br>5) Firewall concept<br>6) Bash variables and quoting<br>7) Conditionals (if) basics<br>8) Loops (for/while) basics<br>9) Functions basics<br>10) Script exit codes and set -e concept | Write a tiny script (args + loop) |
 
 ### Module 3 (M3): Git and Version Control (Hours 9–13)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 9 | Version control fundamentals | 1) Why version control exists<br>2) Repository concept<br>3) Commit concept<br>4) Diff concept<br>5) Branch concept<br>6) Tag concept<br>7) Working tree vs staging area<br>8) History as audit trail<br>9) Code review value<br>10) Semantic versioning concept | Write a commit message rubric for yourself |
 | 10 | Git setup + local repo | 1) Install Git and verify<br>2) Configure user name/email<br>3) Create a repository<br>4) .gitignore basics<br>5) Add and commit flow<br>6) Inspect history (log)<br>7) Compare changes (diff)<br>8) Amend vs new commit (concept)<br>9) Reset vs revert (concept)<br>10) Repo hygiene (small commits) | Init repo; configure identity; first commits |
@@ -178,7 +178,7 @@ End-to-end implementation:
 | 13 | Merge/rebase + conflicts | 1) Merge mechanics<br>2) Rebase mechanics<br>3) When to rebase safely<br>4) Conflict markers and meaning<br>5) Resolving conflicts systematically<br>6) Three-way merge concept<br>7) Binary conflicts concept<br>8) Avoiding conflicts with smaller PRs<br>9) Using blame/history to decide<br>10) Post-merge cleanup (delete branches) | Resolve a merge conflict deliberately |
 
 ### Module 4 (M4): Azure Fundamentals (Hours 14–18)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 14 | Cloud concepts + Azure overview | 1) IaaS vs PaaS vs SaaS<br>2) Shared responsibility model<br>3) Subscription concept<br>4) Resource group concept<br>5) Azure portal vs CLI concept<br>6) Cost management basics<br>7) Service limits and quotas<br>8) Network security basics (NSG concept)<br>9) Logging/monitoring basics in cloud<br>10) Landing zone idea (high-level) | List core Azure services used in DevOps |
 | 15 | Azure global infra | 1) Regions vs geographies<br>2) Availability zones concept<br>3) Paired regions concept<br>4) Latency considerations<br>5) Data residency/compliance basics<br>6) Multi-region DR concept<br>7) Failover patterns overview<br>8) Service availability differences<br>9) Choosing region for pipelines/agents<br>10) Cost vs performance trade-offs | Choose region strategy (latency/compliance) |
@@ -187,26 +187,26 @@ End-to-end implementation:
 | 18 | Storage + IAM basics | 1) Storage account concept<br>2) Blob vs file vs queue vs table<br>3) Redundancy options concept (LRS/ZRS/GRS)<br>4) Access keys vs SAS vs RBAC<br>5) Managed identities usage concept<br>6) Azure AD vs local identities<br>7) Service principals concept<br>8) Role assignments basics<br>9) Key Vault vs storage secrets concept<br>10) Audit and access review concept | Define storage types + RBAC examples |
 
 ### Module 5 (M5): Azure DevOps Introduction (Hours 19–20)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 19 | Azure DevOps: orgs/projects/services | 1) Organization structure<br>2) Projects vs teams concept<br>3) ADO service map (Boards, Repos, Pipelines, Artifacts)<br>4) Project settings overview<br>5) Process templates concept (Agile/Scrum/CMMI)<br>6) Service connections concept<br>7) Agent pools overview<br>8) Permissions model high-level<br>9) Work item customization concept<br>10) Governance baseline checklist | Create/inspect project structure (conceptual) |
 | 20 | Permissions + access management | 1) Users vs groups in ADO<br>2) Project-level roles<br>3) Repo permissions concepts<br>4) Pipeline permissions concepts<br>5) Environment permissions concepts<br>6) Service connection security concept<br>7) Least privilege patterns<br>8) Audit trail expectations<br>9) Approvals and checks concept<br>10) Access review routine | Define roles; least privilege checklist |
 
 ### Module 6 (M6): Azure Boards (Hours 21–23)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 21 | Boards: work item types | 1) Epics vs features vs stories<br>2) Tasks vs bugs<br>3) Acceptance criteria writing<br>4) INVEST principles for stories<br>5) Estimation and sizing<br>6) Priority and ordering<br>7) Definition of Ready concept<br>8) Linking work items to commits/PRs<br>9) Iterations and area paths<br>10) Work item state workflows | Create epics/features/stories/tasks mapping |
 | 22 | Backlogs + sprint planning | 1) Backlog grooming concept<br>2) Sprint goal definition<br>3) Capacity planning basics<br>4) Planning poker concept<br>5) Splitting stories techniques<br>6) Managing dependencies concept<br>7) Sprint board usage<br>8) Daily standup signals<br>9) Sprint review outcomes<br>10) Retrospective action items | Plan a 1-week sprint for a demo app |
 | 23 | Kanban + queries/dashboards | 1) Kanban columns design<br>2) WIP limits concept<br>3) Lead time vs cycle time<br>4) Cumulative flow concept<br>5) Blockers and policies<br>6) Queries basics (filters, fields)<br>7) Query charts concept<br>8) Dashboards composition<br>9) Widgets selection criteria<br>10) Reporting anti-patterns | Build a query + dashboard mock layout |
 
 ### Module 7 (M7): Azure Repos (Hours 24–25)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 24 | Repos in ADO + policies | 1) Repo structure conventions<br>2) Default branch settings<br>3) Branch policies overview<br>4) Required reviewers concept<br>5) Build validation policy concept<br>6) Minimum reviewers and code owners concept<br>7) Comment resolution and threads<br>8) Merge types selection<br>9) Signed commits concept (high-level)<br>10) Protecting secrets in repos | Define branch policies for `main` |
 | 25 | PRs + code review workflow | 1) PR description quality checklist<br>2) Small PR sizing targets<br>3) Review priorities (correctness, security, performance)<br>4) Review etiquette and tone<br>5) Handling review feedback<br>6) Linking PRs to work items<br>7) CI checks required before merge<br>8) Changelog/release notes concept<br>9) Post-merge cleanup<br>10) Common review red flags | Create PR checklist (tests, security, docs) |
 
 ### Module 8 (M8): Azure Pipelines (Hours 26–34)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 26 | Pipelines intro + agents | 1) Pipeline vs build vs release terminology<br>2) Azure Pipelines YAML vs classic overview<br>3) Agent pools concept<br>4) Hosted agents pros/cons<br>5) Self-hosted agents pros/cons<br>6) Tooling on agents (SDKs)<br>7) Permissions to run pipelines<br>8) Service connections basics<br>9) Artifact storage options concept<br>10) Pipeline cost and concurrency | Pick hosted vs self-hosted decision matrix |
 | 27 | YAML pipeline structure | 1) YAML schema basics<br>2) stages/jobs/steps structure<br>3) Checkout step behavior<br>4) Script vs task steps<br>5) Build numbering concept<br>6) Caching concept (dependencies)<br>7) Publishing test results concept<br>8) Pipeline variables basics<br>9) Conditions concept<br>10) Failure handling basics | Write a minimal YAML (build + test) |
@@ -219,7 +219,7 @@ End-to-end implementation:
 | 34 | Troubleshooting pipelines | 1) Reading logs effectively<br>2) Common YAML mistakes<br>3) Agent capability mismatches<br>4) Path issues and working directory<br>5) Permission failures diagnosis<br>6) Service connection failures diagnosis<br>7) Flaky tests handling strategy<br>8) Artifact not found scenarios<br>9) Variable evaluation pitfalls<br>10) Rerun vs fix-forward discipline | Debug common failures (paths, agents, vars) |
 
 ### Module 9 (M9): Docker (Hours 35–38)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 35 | Docker basics + architecture | 1) Image vs container distinction<br>2) Layers and caching concept<br>3) Docker engine components<br>4) Container isolation basics<br>5) Namespaces/cgroups concept (high-level)<br>6) Docker CLI basics<br>7) Port mapping concept<br>8) Container logs basics<br>9) Cleaning unused images/containers safely<br>10) Security basics (least privilege in containers) | Install/verify Docker; run hello-world |
 | 36 | Dockerfile + image build | 1) Base images selection<br>2) Multi-stage builds concept<br>3) Copy vs add differences concept<br>4) RUN vs CMD vs ENTRYPOINT<br>5) Working directory and user directives<br>6) Build args vs env vars<br>7) Minimizing image size basics<br>8) Reproducible builds concept<br>9) Tagging strategy basics<br>10) Container healthcheck concept | Build image for sample app |
@@ -227,7 +227,7 @@ End-to-end implementation:
 | 38 | Docker Compose | 1) Compose file structure<br>2) Services definition<br>3) Networks in Compose<br>4) Volumes in Compose<br>5) Environment injection<br>6) Depends_on behavior and caveats<br>7) Healthcheck usage concept<br>8) Local dev workflow patterns<br>9) Scaling services concept<br>10) Moving from Compose to Kubernetes mapping | Compose app + dependency (e.g., app + DB) |
 
 ### Module 10 (M10): Kubernetes (Hours 39–45)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 39 | K8s architecture | 1) Cluster concept<br>2) Control plane components overview<br>3) Node components overview<br>4) API server role<br>5) Scheduler role<br>6) etcd role concept<br>7) kubelet role<br>8) kube-proxy concept<br>9) CNI concept (network plugin)<br>10) RBAC concept in Kubernetes | Identify control plane vs node responsibilities |
 | 40 | Pods/Deployments/ReplicaSets | 1) Pod definition basics<br>2) ReplicaSet purpose<br>3) Deployment controller purpose<br>4) Desired state model<br>5) Labels and selectors<br>6) Rolling update strategy basics<br>7) Pod lifecycle basics<br>8) Resource requests/limits concept<br>9) Scaling replicas vs autoscaling concept<br>10) Debugging pods (describe/logs) concept | Deploy app; scale replicas |
@@ -238,7 +238,7 @@ End-to-end implementation:
 | 45 | Helm basics | 1) Helm chart structure<br>2) Values and templates concept<br>3) Releases concept<br>4) Upgrades and rollbacks concept<br>5) Chart repositories concept<br>6) Managing environments with values files<br>7) Secrets handling in Helm concept<br>8) Linting charts concept<br>9) Chart versioning strategy<br>10) Helm vs raw manifests trade-offs | Install a chart; override values for envs |
 
 ### Module 11 (M11): Terraform (Hours 46–51)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 46 | IaC basics + Terraform workflow | 1) Declarative vs imperative IaC<br>2) Terraform init/plan/apply lifecycle<br>3) Provider/plugin concept<br>4) Resource blocks concept<br>5) Dependency graph concept<br>6) Drift detection concept<br>7) Idempotency expectations<br>8) Formatting and validation commands concept<br>9) Sensitive values handling concept<br>10) Reviewing plans in PRs concept | Write first `main.tf`; plan/apply mentally |
 | 47 | Providers + resources | 1) Azure provider authentication options concept<br>2) Resource group resource concept<br>3) Networking resources overview concept<br>4) Compute resources overview concept<br>5) Storage resources overview concept<br>6) Using data sources concept<br>7) Referencing attributes<br>8) Dependencies with depends_on concept<br>9) Import existing resources concept<br>10) Provider version pinning concept | Configure Azure provider; create core resources (concept) |
@@ -248,20 +248,20 @@ End-to-end implementation:
 | 51 | Workspaces + environment separation | 1) Workspace concept<br>2) When workspaces help<br>3) When separate state is better<br>4) Separate subscriptions concept<br>5) Separate repos vs mono-repo trade-offs<br>6) Promotion model (dev→test→prod)<br>7) Secrets per environment<br>8) Access boundaries per environment<br>9) Naming and tagging per environment<br>10) Disaster recovery for infra pipelines | Decide: workspaces vs separate states/repos |
 
 ### Module 12 (M12): Azure Artifacts (Hours 52–53)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 52 | Artifacts feeds + versioning | 1) What a package is<br>2) Feed purpose<br>3) Upstream sources concept<br>4) Permissions for feeds<br>5) Semantic versioning rules<br>6) Pre-release versions concept<br>7) Deprecation policy concept<br>8) Retention policies concept<br>9) Build metadata concept<br>10) Traceability from package to commit | Define package version rules (SemVer) |
 | 53 | Consume artifacts in pipeline | 1) Restore dependencies step concept<br>2) Authenticate to feed concept<br>3) Lockfiles concept<br>4) Cache dependencies concept<br>5) Publish package step concept<br>6) Promote package to views concept<br>7) Vulnerable dependency scanning concept<br>8) License compliance concept<br>9) Reproducible builds with pinned deps<br>10) Handling breaking changes policy | Add restore/publish steps conceptually |
 
 ### Module 13 (M13): Monitoring and Logging (Hours 54–56)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 54 | Azure Monitor fundamentals | 1) Metrics vs logs vs traces<br>2) Golden signals (latency, traffic, errors, saturation)<br>3) SLI vs SLO vs SLA<br>4) Alert fatigue concept<br>5) Dashboard design basics<br>6) Action groups concept<br>7) Severity levels definition<br>8) Runbooks concept<br>9) On-call basics concept<br>10) Incident lifecycle basics | Define SLI/SLO basics for your app |
 | 55 | App Insights + tracing | 1) Instrumentation concept<br>2) Request telemetry concept<br>3) Dependencies telemetry concept<br>4) Exceptions telemetry concept<br>5) Distributed tracing concept<br>6) Correlation IDs concept<br>7) Sampling concept<br>8) Custom events/metrics concept<br>9) Availability tests concept<br>10) Performance baselining concept | Identify key telemetry events for API |
 | 56 | Log Analytics + alerts | 1) Workspace concept<br>2) KQL basics concept<br>3) Query patterns for errors<br>4) Query patterns for latency<br>5) Log ingestion costs concept<br>6) Alert rules from queries concept<br>7) Alert thresholds and windows<br>8) Suppression and deduplication concept<br>9) Escalation paths concept<br>10) Post-incident review inputs | Create alert rules plan (latency/errors) |
 
 ### Module 14 (M14): DevSecOps (Hours 57–60)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 57 | DevSecOps overview + threat thinking | 1) Shift-left security concept<br>2) Threat modeling basics<br>3) Attack surface in CI/CD<br>4) Supply chain security overview<br>5) Trust boundaries concept<br>6) Principle of least privilege in pipelines<br>7) Secure defaults concept<br>8) Logging/audit for security<br>9) Incident response basics<br>10) Security gates vs delivery speed trade-off | Create a mini threat model for pipeline |
 | 58 | Secrets + Key Vault | 1) What qualifies as a secret<br>2) Secret sprawl risks<br>3) Key Vault purpose<br>4) Secrets vs keys vs certificates<br>5) Access policies/RBAC concept<br>6) Managed identity integration concept<br>7) Secret rotation strategy<br>8) Avoiding secrets in logs<br>9) Pipeline secret variables best practice<br>10) Runtime secret injection patterns | Define secret flow: dev → pipeline → runtime |
@@ -269,7 +269,7 @@ End-to-end implementation:
 | 60 | Code quality + scanning integration | 1) Linting and formatting gates<br>2) Unit test gates<br>3) Coverage thresholds concept<br>4) SAST concept and placement in pipeline<br>5) SCA concept for dependencies<br>6) Container image scanning concept<br>7) IaC scanning concept<br>8) Secrets scanning concept<br>9) SBOM concept and usage<br>10) Fail vs warn policy tuning | Choose gates: tests + lint + SAST/SCA + container scan |
 
 ### Module 15 (M15): Real-Time DevOps Project (Hours 61–64)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 61 | Project setup: repo + boards + backlog | 1) Choose sample app scope<br>2) Repo layout (src, infra, pipelines)<br>3) Initialize Boards backlog<br>4) Define epics/features/stories<br>5) Add acceptance criteria for stories<br>6) Define Definition of Done<br>7) Create sprint and capacity<br>8) Link repos to boards practices<br>9) Establish branching strategy<br>10) Create initial PR policies | Create repo structure + initial work items |
 | 62 | CI: build/test + artifacts | 1) Add build step<br>2) Add unit tests step<br>3) Add lint step<br>4) Add test results publishing<br>5) Add build caching concept<br>6) Generate build artifact<br>7) Artifact naming and versioning<br>8) PR validation pipeline configuration<br>9) Build badge/reporting concept<br>10) Fail-fast vs collect-all-results strategy | Implement CI stages plan; artifact naming |
@@ -277,7 +277,7 @@ End-to-end implementation:
 | 64 | IaC + deploy to K8s | 1) Terraform plan for required resources<br>2) Remote state setup concept<br>3) Create Kubernetes manifests or Helm chart structure<br>4) Configure deployment values per env<br>5) Add pipeline deploy stage concept<br>6) Add environment approvals concept<br>7) Configure config/secrets injection concept<br>8) Add smoke tests post-deploy concept<br>9) Add rollback strategy concept<br>10) Document runbook for release | Terraform plan + K8s manifests/Helm plan |
 
 ### Module 16 (M16): MLOps on Azure (Hours 65–68)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 65 | MLOps lifecycle + artifacts | 1) Define ML problem and metric<br>2) Data sources and dataset definition<br>3) Data versioning concept<br>4) Feature engineering reproducibility concept<br>5) Training/validation split practices<br>6) Dataset quality checks concept<br>7) Model artifact packaging concept<br>8) Pipeline vs notebook separation concept<br>9) Governance and approvals concept<br>10) Traceability from model to data/code | Define dataset/model versioning approach |
 | 66 | Experiment tracking + registry | 1) Experiment tracking purpose<br>2) Run metadata (params, metrics, artifacts)<br>3) Reproducibility fields checklist<br>4) Model registry purpose<br>5) Staging vs production model states concept<br>6) Model versioning strategy<br>7) Approval gates for models concept<br>8) Signing/provenance concept (high-level)<br>9) Packaging inference code and dependencies<br>10) Documentation for model cards concept | Decide tracking + registry workflow |
@@ -285,7 +285,7 @@ End-to-end implementation:
 | 68 | Deploy + monitor ML models | 1) Batch vs online inference<br>2) Endpoint deployment concepts<br>3) Canary for models concept<br>4) Shadow deployments concept<br>5) Monitoring latency and errors<br>6) Monitoring prediction quality signals<br>7) Concept drift vs data drift<br>8) Retraining triggers criteria<br>9) A/B testing concept<br>10) Incident response for ML services | Outline online/batch inference + drift monitoring |
 
 ### Module 17 (M17): LLMOps on Azure (Hours 69–70)
-| Hour | Subsection (Focus) | 10 Subtopics | Hands-on / Output |
+| Hour | Subsection (Focus) | subtopics | Hands-on / Output |
 |---:|---|---|---|
 | 69 | LLMOps: prompt/versioning + evals | 1) LLM app architecture overview<br>2) Prompt templates concept<br>3) Prompt versioning and change control<br>4) Offline eval datasets concept<br>5) Online eval signals concept<br>6) Quality metrics (accuracy, faithfulness) concept<br>7) Safety metrics (toxicity, jailbreak) concept<br>8) Latency and cost budgeting concept<br>9) Regression testing for prompts concept<br>10) Release gating using eval thresholds concept | Create eval checklist: accuracy, toxicity, latency |
 | 70 | RAG + safety + monitoring | 1) RAG architecture (index-retrieve-generate)<br>2) Chunking strategies concept<br>3) Embeddings concept<br>4) Retrieval tuning (top-k, filters) concept<br>5) Grounding and citations concept<br>6) Hallucination mitigation tactics<br>7) PII handling strategy concept<br>8) Prompt injection threats concept<br>9) Telemetry for LLM apps (tokens, latency, refusals)<br>10) Post-deploy continuous evaluation loop | Design RAG flow + guardrails + telemetry plan |
@@ -313,4 +313,5 @@ Build a small web API (any language) and deliver it end-to-end:
 - You can integrate **Key Vault** and enforce **security/quality gates**
 - You can define **observability signals** and set **alerts**
 - You can describe how you’d run **MLOps** and **LLMOps** in production
+
 
