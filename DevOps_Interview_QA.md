@@ -1,10 +1,6 @@
 # DevOps Interview Questions & Answers
 ## Azure DevOps | Kubernetes | Terraform | Azure DevOps YAML Pipelines
 
-> **100 Real-Time Interview Questions with Detailed Answers**
-> Covers beginner to advanced level concepts with real-world examples.
-
----
 
 # PART 1: AZURE DEVOPS (Questions 1–25)
 
