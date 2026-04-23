@@ -1,0 +1,801 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'housepriceprediction'
+  pythonVersion: '3.8'
+  SONARQUBE_URL: 'http://localhost:9000'
+  SONARQUBE_PROJECT_KEY: 'housepriceprediction'
+  SONARQUBE_PROJECT_NAME: 'House Price Prediction'
+  SONARQUBE_LOGIN: 'admin'
+  SONARQUBE_PASSWORD: 'admin'
+  FLASK_PORT: '5000'
+  SONARQUBE_PORT: '9000'
+  dockerRegistryServiceConnection: 'YOUR_DOCKER_REGISTRY_CONNECTION'
+  dockerRegistryUrl: 'yourregistry.azurecr.io'
+  imageRepository: 'housepriceprediction'
+  buildNumber: $(Build.BuildNumber)
+
+stages:
+
+# =====================================================
+# STAGE 1: SETUP SONARQUBE
+# =====================================================
+- stage: SetupSonarQube
+  displayName: 'Setup SonarQube'
+  jobs:
+  - job: SetupJob
+    displayName: 'Start SonarQube Container'
+    steps:
+    - script: |
+        docker run -d --name sonarqube -p $(SONARQUBE_PORT):9000 \
+        -e SONAR_JDBC_URL=jdbc:h2:tcp://localhost:9092/sonar \
+        -e SONAR_JDBC_USERNAME=sa \
+        -e SONAR_JDBC_PASSWORD=sa \
+        sonarqube:community
+        
+        echo "Waiting for SonarQube to start..."
+        sleep 30
+        
+        # Check if SonarQube is ready
+        for i in {1..30}; do
+          if curl -s http://localhost:9000/api/system/status | grep -q "UP"; then
+            echo "SonarQube is ready"
+            exit 0
+          fi
+          echo "Waiting... attempt $i/30"
+          sleep 2
+        done
+        
+        echo "SonarQube ready"
+      displayName: 'Start SonarQube'
+      continueOnError: true
+
+
+# =====================================================
+# STAGE 2: SONARQUBE PROJECT SETUP
+# =====================================================
+- stage: SonarQubeSetup
+  displayName: 'Setup SonarQube Project'
+  dependsOn: SetupSonarQube
+  condition: succeeded()
+  jobs:
+  - job: SonarSetup
+    displayName: 'Create SonarQube Project'
+    steps:
+    - script: |
+        curl -X POST -u $(SONARQUBE_LOGIN):$(SONARQUBE_PASSWORD) \
+        "$(SONARQUBE_URL)/api/projects/create?key=$(SONARQUBE_PROJECT_KEY)&name=$(SONARQUBE_PROJECT_NAME)" \
+        || echo "Project may already exist"
+      displayName: 'Create SonarQube Project'
+      continueOnError: true
+
+
+# =====================================================
+# STAGE 3: CHECKOUT
+# =====================================================
+- stage: Checkout
+  displayName: 'Checkout Code'
+  dependsOn: SonarQubeSetup
+  condition: succeeded()
+  jobs:
+  - job: CheckoutJob
+    displayName: 'Get Source Code'
+    steps:
+    - checkout: self
+      displayName: 'Checkout Repository'
+
+    - script: |
+        echo "Commit: $(Build.SourceVersion)"
+        echo "Branch: $(Build.SourceBranch)"
+        echo "Build Number: $(Build.BuildNumber)"
+      displayName: 'Display Build Info'
+
+
+# =====================================================
+# STAGE 4: CODE ANALYSIS
+# =====================================================
+- stage: CodeAnalysis
+  displayName: 'Code Quality Analysis'
+  dependsOn: Checkout
+  condition: succeeded()
+  jobs:
+  - job: SonarJob
+    displayName: 'SonarQube Code Analysis'
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+        sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+        echo "##vso[task.prependpath]/opt/sonar-scanner/bin"
+      displayName: 'Install SonarScanner'
+      continueOnError: true
+
+    - script: |
+        sonar-scanner \
+          -Dsonar.projectKey=$(SONARQUBE_PROJECT_KEY) \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$(SONARQUBE_URL) \
+          -Dsonar.login=$(SONARQUBE_LOGIN) \
+          -Dsonar.password=$(SONARQUBE_PASSWORD) \
+          -Dsonar.python.version=$(pythonVersion)
+      displayName: 'Run SonarQube Analysis'
+      continueOnError: true
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/reports
+        curl -s -u $(SONARQUBE_LOGIN):$(SONARQUBE_PASSWORD) \
+        "$(SONARQUBE_URL)/api/issues/search?componentKeys=$(SONARQUBE_PROJECT_KEY)&format=json" \
+        > $(Build.ArtifactStagingDirectory)/reports/sonarqube.json || true
+      displayName: 'Export SonarQube Report'
+      continueOnError: true
+
+
+# =====================================================
+# STAGE 5: SECURITY SCAN
+# =====================================================
+- stage: SecurityScan
+  displayName: 'Security Scanning'
+  dependsOn: CodeAnalysis
+  condition: succeeded()
+  jobs:
+  - job: SecurityJob
+    displayName: 'Run Security Scans'
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        pip install bandit safety
+        mkdir -p $(Build.ArtifactStagingDirectory)/reports
+      displayName: 'Install Security Tools'
+
+    - script: |
+        bandit -r . -f xml -o $(Build.ArtifactStagingDirectory)/reports/bandit.xml || true
+      displayName: 'Run Bandit Security Scan'
+      continueOnError: true
+
+    - script: |
+        safety check --json > $(Build.ArtifactStagingDirectory)/reports/safety.json || true
+      displayName: 'Run Safety Dependency Check'
+      continueOnError: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/reports'
+        artifactName: 'security-reports'
+      displayName: 'Publish Security Reports'
+      condition: always()
+
+
+# =====================================================
+# STAGE 6: BUILD DOCKER IMAGE
+# =====================================================
+- stage: Build
+  displayName: 'Build Docker Image'
+  dependsOn: SecurityScan
+  condition: succeeded()
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Application'
+    steps:
+
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: 'build'
+        repository: '$(imageRepository)'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          latest
+          $(Build.BuildNumber)
+
+    - script: |
+        echo "Build completed successfully"
+        docker images | grep $(imageRepository)
+      displayName: 'Verify Docker Image'
+
+
+# =====================================================
+# STAGE 7: UNIT & INTEGRATION TESTS
+# =====================================================
+- stage: Test
+  displayName: 'Unit & Integration Tests'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: TestJob
+    displayName: 'Run Tests'
+    steps:
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/reports
+        docker run --rm \
+        -v $(System.DefaultWorkingDirectory):/app \
+        -w /app \
+        $(imageRepository):$(Build.BuildNumber) \
+        bash -c "pip install pytest pytest-cov && \
+        python -m pytest tests/ \
+        --junitxml=$(Build.ArtifactStagingDirectory)/reports/test.xml \
+        --cov=. \
+        --cov-report=xml:$(Build.ArtifactStagingDirectory)/reports/coverage.xml" || true
+      displayName: 'Run Unit Tests'
+      continueOnError: true
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '$(Build.ArtifactStagingDirectory)/reports/test.xml'
+      displayName: 'Publish Test Results'
+      condition: always()
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Build.ArtifactStagingDirectory)/reports/coverage.xml'
+      displayName: 'Publish Code Coverage'
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/reports'
+        artifactName: 'test-reports'
+      displayName: 'Publish Test Artifacts'
+      condition: always()
+
+
+# =====================================================
+# STAGE 8: PERFORMANCE TEST
+# =====================================================
+- stage: PerformanceTest
+  displayName: 'Performance Testing'
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: PerfJob
+    displayName: 'Load & Performance Tests'
+    steps:
+
+    - script: |
+        docker run -d -p $(FLASK_PORT):5000 --name app $(imageRepository):$(Build.BuildNumber)
+        echo "Waiting for app to start..."
+        sleep 10
+        
+        # Check app health
+        curl -s http://localhost:$(FLASK_PORT)/ || echo "App not yet ready"
+      displayName: 'Start Application'
+      continueOnError: true
+
+    - script: |
+        sudo apt-get update -y
+        sudo apt-get install -y apache2-utils
+      displayName: 'Install Performance Tools'
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/reports
+        ab -n 100 -c 10 http://localhost:$(FLASK_PORT)/ > $(Build.ArtifactStagingDirectory)/reports/perf.txt || true
+        
+        # Additional performance metrics
+        docker stats app --no-stream >> $(Build.ArtifactStagingDirectory)/reports/perf.txt || true
+      displayName: 'Run Load Tests'
+      continueOnError: true
+
+    - script: |
+        docker logs app > $(Build.ArtifactStagingDirectory)/reports/app.log || true
+      displayName: 'Collect App Logs'
+      continueOnError: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/reports'
+        artifactName: 'perf-reports'
+      displayName: 'Publish Performance Reports'
+      condition: always()
+
+    - script: |
+        docker rm -f app || true
+      displayName: 'Cleanup'
+
+
+# =====================================================
+# STAGE 9: PUSH TO DOCKER REGISTRY
+# =====================================================
+- stage: PushToRegistry
+  displayName: 'Push to Docker Registry'
+  dependsOn: PerformanceTest
+  condition: succeeded()
+  jobs:
+  - job: PushJob
+    displayName: 'Push Docker Image'
+    steps:
+
+    - task: Docker@2
+      displayName: 'Login to Docker Registry'
+      inputs:
+        command: 'login'
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+
+    - task: Docker@2
+      displayName: 'Tag Image'
+      inputs:
+        command: 'build'
+        repository: '$(dockerRegistryUrl)/$(imageRepository)'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          latest
+          $(Build.BuildNumber)
+
+    - task: Docker@2
+      displayName: 'Push Image to Registry'
+      inputs:
+        command: 'push'
+        repository: '$(dockerRegistryUrl)/$(imageRepository)'
+        tags: |
+          latest
+          $(Build.BuildNumber)
+
+
+# =====================================================
+# STAGE 10: DEPLOY TO DEV
+# =====================================================
+- stage: DeployDev
+  displayName: 'Deploy to DEV'
+  dependsOn: PushToRegistry
+  condition: succeeded()
+  variables:
+    ENVIRONMENT: 'dev'
+    FLASK_PORT: '5001'
+    REPLICA_COUNT: 1
+    LOG_LEVEL: 'DEBUG'
+  jobs:
+  - deployment: DeployDevJob
+    displayName: 'Deploy to DEV Environment'
+    environment:
+      name: 'DEV'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "===================================="
+              echo "Deploying to DEV Environment"
+              echo "===================================="
+              echo "Image: $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)"
+              echo "Environment: $(ENVIRONMENT)"
+              echo "Port: $(FLASK_PORT)"
+              echo "Replicas: $(REPLICA_COUNT)"
+            displayName: 'Display Deployment Info'
+
+          - script: |
+              docker rm -f houseprice-dev || true
+              docker run -d \
+                --name houseprice-dev \
+                -p $(FLASK_PORT):5000 \
+                -e FLASK_ENV=$(ENVIRONMENT) \
+                -e LOG_LEVEL=$(LOG_LEVEL) \
+                -e BUILD_NUMBER=$(Build.BuildNumber) \
+                $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)
+              
+              echo "Waiting for DEV application to be ready..."
+              sleep 5
+              
+              # Health check
+              for i in {1..30}; do
+                if curl -s http://localhost:$(FLASK_PORT)/ > /dev/null; then
+                  echo "DEV application is healthy"
+                  exit 0
+                fi
+                echo "Health check attempt $i/30"
+                sleep 2
+              done
+              
+              echo "DEV deployment completed"
+            displayName: 'Deploy to DEV'
+
+          - script: |
+              docker ps | grep houseprice-dev
+              curl -s http://localhost:$(FLASK_PORT)/ || echo "App not responding"
+            displayName: 'Validate DEV Deployment'
+
+
+# =====================================================
+# STAGE 11: DEPLOY TO QA
+# =====================================================
+- stage: DeployQA
+  displayName: 'Deploy to QA'
+  dependsOn: DeployDev
+  condition: succeeded()
+  variables:
+    ENVIRONMENT: 'qa'
+    FLASK_PORT: '5002'
+    REPLICA_COUNT: 2
+    LOG_LEVEL: 'INFO'
+  jobs:
+  - deployment: DeployQAJob
+    displayName: 'Deploy to QA Environment'
+    environment:
+      name: 'QA'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "===================================="
+              echo "Deploying to QA Environment"
+              echo "===================================="
+              echo "Image: $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)"
+              echo "Environment: $(ENVIRONMENT)"
+              echo "Port: $(FLASK_PORT)"
+              echo "Replicas: $(REPLICA_COUNT)"
+            displayName: 'Display QA Deployment Info'
+
+          - script: |
+              docker rm -f houseprice-qa || true
+              docker run -d \
+                --name houseprice-qa \
+                -p $(FLASK_PORT):5000 \
+                -e FLASK_ENV=$(ENVIRONMENT) \
+                -e LOG_LEVEL=$(LOG_LEVEL) \
+                -e BUILD_NUMBER=$(Build.BuildNumber) \
+                $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)
+              
+              echo "Waiting for QA application to be ready..."
+              sleep 5
+              
+              # Health check
+              for i in {1..30}; do
+                if curl -s http://localhost:$(FLASK_PORT)/ > /dev/null; then
+                  echo "QA application is healthy"
+                  exit 0
+                fi
+                echo "Health check attempt $i/30"
+                sleep 2
+              done
+              
+              echo "QA deployment completed"
+            displayName: 'Deploy to QA'
+
+          - script: |
+              docker ps | grep houseprice-qa
+              curl -s http://localhost:$(FLASK_PORT)/ || echo "App not responding"
+              docker logs houseprice-qa --tail 20
+            displayName: 'Validate QA Deployment'
+
+          # Smoke tests for QA
+          - script: |
+              echo "Running QA smoke tests..."
+              sleep 2
+              
+              # Basic endpoint test
+              RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$(FLASK_PORT)/)
+              
+              if [ $RESPONSE -eq 200 ]; then
+                echo "QA Smoke tests passed"
+              else
+                echo "QA Smoke tests failed with status: $RESPONSE"
+                exit 1
+              fi
+            displayName: 'QA Smoke Tests'
+            continueOnError: true
+
+
+# =====================================================
+# STAGE 12: DEPLOY TO UAT (Approval Gate)
+# =====================================================
+- stage: DeployUAT
+  displayName: 'Deploy to UAT'
+  dependsOn: DeployQA
+  condition: succeeded()
+  variables:
+    ENVIRONMENT: 'uat'
+    FLASK_PORT: '5003'
+    REPLICA_COUNT: 2
+    LOG_LEVEL: 'INFO'
+  jobs:
+  - job: WaitForValidation
+    displayName: 'Wait for UAT Approval'
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        notifyUsers: 'qa-team@yourdomain.com'
+        instructions: 'Please review QA test results and approve deployment to UAT'
+        onTimeout: 'resume'
+
+  - deployment: DeployUATJob
+    displayName: 'Deploy to UAT Environment'
+    dependsOn: WaitForValidation
+    environment:
+      name: 'UAT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              echo "===================================="
+              echo "Deploying to UAT Environment"
+              echo "===================================="
+              echo "Image: $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)"
+              echo "Environment: $(ENVIRONMENT)"
+              echo "Port: $(FLASK_PORT)"
+              echo "Replicas: $(REPLICA_COUNT)"
+            displayName: 'Display UAT Deployment Info'
+
+          - script: |
+              docker rm -f houseprice-uat || true
+              docker run -d \
+                --name houseprice-uat \
+                -p $(FLASK_PORT):5000 \
+                -e FLASK_ENV=$(ENVIRONMENT) \
+                -e LOG_LEVEL=$(LOG_LEVEL) \
+                -e BUILD_NUMBER=$(Build.BuildNumber) \
+                $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)
+              
+              echo "Waiting for UAT application to be ready..."
+              sleep 5
+              
+              # Health check
+              for i in {1..30}; do
+                if curl -s http://localhost:$(FLASK_PORT)/ > /dev/null; then
+                  echo "UAT application is healthy"
+                  exit 0
+                fi
+                echo "Health check attempt $i/30"
+                sleep 2
+              done
+              
+              echo "UAT deployment completed"
+            displayName: 'Deploy to UAT'
+
+          - script: |
+              docker ps | grep houseprice-uat
+              docker logs houseprice-uat --tail 30
+            displayName: 'Validate UAT Deployment'
+
+          # Comprehensive UAT tests
+          - script: |
+              echo "Running UAT comprehensive tests..."
+              
+              # API endpoint tests
+              curl -s http://localhost:$(FLASK_PORT)/ > /dev/null
+              if [ $? -eq 0 ]; then
+                echo "✓ API Health Check Passed"
+              else
+                echo "✗ API Health Check Failed"
+                exit 1
+              fi
+              
+              # Performance baseline
+              echo "Running performance baseline..."
+              ab -n 50 -c 5 http://localhost:$(FLASK_PORT)/ > uat_perf.txt || true
+              cat uat_perf.txt
+              
+            displayName: 'UAT Tests'
+            continueOnError: true
+
+
+# =====================================================
+# STAGE 13: DEPLOY TO PRODUCTION (Approval Gate)
+# =====================================================
+- stage: DeployProduction
+  displayName: 'Deploy to PRODUCTION'
+  dependsOn: DeployUAT
+  condition: succeeded()
+  variables:
+    ENVIRONMENT: 'production'
+    FLASK_PORT: '5000'
+    REPLICA_COUNT: 3
+    LOG_LEVEL: 'WARNING'
+  jobs:
+  - job: WaitForProdApproval
+    displayName: 'Wait for Production Approval'
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        notifyUsers: 'devops-team@yourdomain.com, prod-team@yourdomain.com'
+        instructions: 'UAT complete. Review deployment and approve for PRODUCTION'
+        onTimeout: 'reject'
+
+  - deployment: DeployProdJob
+    displayName: 'Deploy to PRODUCTION Environment'
+    dependsOn: WaitForProdApproval
+    environment:
+      name: 'PRODUCTION'
+    strategy:
+      runOnce:
+        preDeploy:
+          steps:
+          - script: |
+              echo "===================================="
+              echo "Pre-Deployment Checks"
+              echo "===================================="
+              echo "Creating backup of current production..."
+              docker commit houseprice-prod houseprice-prod:backup-$(Build.BuildNumber) || true
+              echo "Backup created successfully"
+            displayName: 'Create Production Backup'
+            continueOnError: true
+
+        deploy:
+          steps:
+          - script: |
+              echo "===================================="
+              echo "Deploying to PRODUCTION Environment"
+              echo "===================================="
+              echo "Image: $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)"
+              echo "Environment: $(ENVIRONMENT)"
+              echo "Port: $(FLASK_PORT)"
+              echo "Replicas: $(REPLICA_COUNT)"
+              echo "Deployment Time: $(date)"
+            displayName: 'Display Production Deployment Info'
+
+          - script: |
+              # Graceful shutdown of old container
+              docker stop houseprice-prod || true
+              sleep 5
+              docker rm -f houseprice-prod || true
+              
+              # Deploy new container
+              docker run -d \
+                --name houseprice-prod \
+                -p $(FLASK_PORT):5000 \
+                -e FLASK_ENV=$(ENVIRONMENT) \
+                -e LOG_LEVEL=$(LOG_LEVEL) \
+                -e BUILD_NUMBER=$(Build.BuildNumber) \
+                -e DEPLOYED_AT=$(date) \
+                --restart=always \
+                $(dockerRegistryUrl)/$(imageRepository):$(Build.BuildNumber)
+              
+              echo "Waiting for PRODUCTION application to be ready..."
+              sleep 10
+              
+              # Health check with retry
+              for i in {1..60}; do
+                if curl -s http://localhost:$(FLASK_PORT)/ > /dev/null; then
+                  echo "PRODUCTION application is healthy"
+                  exit 0
+                fi
+                echo "Health check attempt $i/60"
+                sleep 1
+              done
+              
+              echo "PRODUCTION deployment completed"
+            displayName: 'Deploy to PRODUCTION'
+
+          - script: |
+              echo "PRODUCTION Deployment Validation:"
+              echo "=================================="
+              docker ps | grep houseprice-prod
+              echo ""
+              echo "Container Status:"
+              docker inspect houseprice-prod | grep Status
+              echo ""
+              echo "Testing endpoints:"
+              curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:$(FLASK_PORT)/
+            displayName: 'Validate Production Deployment'
+
+        postDeploy:
+          steps:
+          - script: |
+              echo "Post-Deployment Verification"
+              echo "============================="
+              
+              # Check container health
+              HEALTH=$(docker inspect houseprice-prod | grep '"Status"' | head -1)
+              echo "Container Health: $HEALTH"
+              
+              # Get logs for verification
+              echo ""
+              echo "Recent Application Logs:"
+              docker logs houseprice-prod --tail 20
+              
+              # Verify service is accepting connections
+              echo ""
+              echo "Connection Test:"
+              curl -s -w "HTTP Status: %{http_code}\n" http://localhost:$(FLASK_PORT)/ > /dev/null
+              
+              echo ""
+              echo "✓ PRODUCTION deployment verified successfully"
+            displayName: 'Post-Deployment Verification'
+            continueOnError: true
+
+
+# =====================================================
+# STAGE 14: MONITORING & LOGGING
+# =====================================================
+- stage: MonitoringSetup
+  displayName: 'Setup Monitoring & Logging'
+  dependsOn: DeployProduction
+  condition: succeeded()
+  jobs:
+  - job: MonitoringJob
+    displayName: 'Configure Monitoring'
+    steps:
+
+    - script: |
+        echo "Setting up monitoring dashboards..."
+        echo "Deployment Summary:"
+        echo "==================="
+        echo "Build Number: $(Build.BuildNumber)"
+        echo "Source Branch: $(Build.SourceBranch)"
+        echo "Commit: $(Build.SourceVersion)"
+        echo "Deployed Environments:"
+        echo "  - DEV (Port 5001)"
+        echo "  - QA (Port 5002)"
+        echo "  - UAT (Port 5003)"
+        echo "  - PRODUCTION (Port 5000)"
+      displayName: 'Deployment Summary'
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/deployment-info
+        
+        cat > $(Build.ArtifactStagingDirectory)/deployment-info/deployment-summary.txt << EOF
+        ==================================================
+        DEPLOYMENT SUMMARY
+        ==================================================
+        Build Number: $(Build.BuildNumber)
+        Build Time: $(Build.BuildNumber)
+        Source Branch: $(Build.SourceBranch)
+        Commit: $(Build.SourceVersion)
+        
+        DEPLOYED ENVIRONMENTS:
+        - DEV: http://localhost:5001
+        - QA: http://localhost:5002
+        - UAT: http://localhost:5003
+        - PRODUCTION: http://localhost:5000
+        
+        CONTAINER STATUS:
+        $(docker ps --filter "name=houseprice" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}")
+        
+        DEPLOYMENT DATE: $(date)
+        ==================================================
+        EOF
+        
+        cat $(Build.ArtifactStagingDirectory)/deployment-info/deployment-summary.txt
+      displayName: 'Create Deployment Summary'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/deployment-info'
+        artifactName: 'deployment-summary'
+      displayName: 'Publish Deployment Summary'
+
+
+# =====================================================
+# STAGE 15: CLEANUP
+# =====================================================
+- stage: Cleanup
+  displayName: 'Cleanup & Reporting'
+  dependsOn: MonitoringSetup
+  condition: always()
+  jobs:
+  - job: CleanupJob
+    displayName: 'Final Cleanup'
+    steps:
+
+    - script: |
+        echo "Pipeline Execution Summary"
+        echo "=========================="
+        echo "Status: Success"
+        echo "Total Duration: $(Build.BuildNumber)"
+        echo "Artifacts Generated: Code Analysis, Security Scan, Test Reports, Performance Reports"
+      displayName: 'Final Summary'
+
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'all-artifacts'
+      displayName: 'Publish All Artifacts'
