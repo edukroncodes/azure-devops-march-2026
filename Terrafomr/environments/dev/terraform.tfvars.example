@@ -1,0 +1,10 @@
+project     = "ecommerce"
+environment = "dev"
+location    = "eastus2"
+
+admin_username = "pgadmin"
+admin_password = "REPLACE_WITH_A_STRONG_PASSWORD"
+
+authorized_ip_ranges = [
+  "203.0.113.10/32"
+]
